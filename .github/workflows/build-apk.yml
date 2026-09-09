@@ -8,10 +8,11 @@ jobs:
   build-apk:
     runs-on: ubuntu-latest
     env:
-      # Mots de passe du certificat de signature de l'app.
+      # Mots de passe et alias du certificat de signature de l'app.
       # Pour un projet perso non publié sur le Play Store, des valeurs fixes suffisent.
       BUBBLEWRAP_KEYSTORE_PASSWORD: ottoz-shirley-2026
       BUBBLEWRAP_KEY_PASSWORD: ottoz-shirley-2026
+      KEY_ALIAS: ottoz
 
     steps:
       - name: Récupérer le dépôt
@@ -30,17 +31,25 @@ jobs:
         run: npm install -g @bubblewrap/cli
 
       - name: Indiquer à Bubblewrap où trouver Java et le SDK Android
-        run: printf 'n\n' | bubblewrap updateConfig --jdkPath="$JAVA_HOME" --androidSdkPath="$ANDROID_HOME"
+        run: printf "n\n${JAVA_HOME}\nn\n${ANDROID_HOME}\n" | bubblewrap updateConfig --jdkPath="$JAVA_HOME" --androidSdkPath="$ANDROID_HOME"
 
-      - name: Initialiser le projet Android (première tentative automatisée)
-        # Cette ligne répond automatiquement aux questions posées par bubblewrap init.
-        # Si le build échoue, on regardera le log pour voir à quelle question
-        # la réponse ne correspondait pas, et on ajustera cette liste.
-        run: printf 'n\n\n\n\n\n\n\n\n\n\n\ny\nOTTOZ\nShirley Games\nShirley Games\nParis\nParis\nFR\nyes\n' | bubblewrap init --manifest="https://sig229.github.io/OTTOZ_GAME/manifest.json" --directory="android-project" --skipPwaValidation || true
+      - name: Créer le certificat de signature à l'avance
+        # On crée nous-mêmes le fichier de signature, avec un mot de passe et un alias connus.
+        # Bubblewrap détectera ce fichier existant et n'aura pas besoin de le créer lui-même
+        # (ce qui évite la partie la plus imprévisible du processus interactif).
+        run: |
+          mkdir -p android-project
+          keytool -genkeypair -v -keystore android-project/android.keystore -alias "$KEY_ALIAS" -keyalg RSA -keysize 2048 -validity 10000 -storepass "$BUBBLEWRAP_KEYSTORE_PASSWORD" -keypass "$BUBBLEWRAP_KEY_PASSWORD" -dname "CN=OTTOZ, OU=Shirley Games, O=Shirley Games, L=Paris, S=Paris, C=FR"
+
+      - name: Initialiser le projet Android
+        # Répond automatiquement aux questions posées par bubblewrap init :
+        # JDK/SDK (déjà installés), une douzaine de valeurs par défaut (nom, url, couleurs...),
+        # puis l'alias et les mots de passe du certificat qu'on vient de créer.
+        run: printf "n\n${JAVA_HOME}\nn\n${ANDROID_HOME}\n\n\n\n\n\n\n\n\n\n\n\n\n${KEY_ALIAS}\n${BUBBLEWRAP_KEYSTORE_PASSWORD}\n${BUBBLEWRAP_KEY_PASSWORD}\n\n\n\n\n\n" | bubblewrap init --manifest="https://sig229.github.io/OTTOZ_GAME/manifest.json" --directory="android-project" --skipPwaValidation
 
       - name: Construire l'APK signé
         working-directory: android-project
-        run: printf 'n\n' | bubblewrap build --skipPwaValidation
+        run: printf "n\n${JAVA_HOME}\nn\n${ANDROID_HOME}\n" | bubblewrap build --skipPwaValidation
 
       - name: Mettre l'APK à disposition en téléchargement
         uses: actions/upload-artifact@v4
