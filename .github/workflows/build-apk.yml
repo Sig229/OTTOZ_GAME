@@ -33,10 +33,11 @@ jobs:
         run: bubblewrap updateConfig --jdkPath="$JAVA_HOME" --androidSdkPath="$ANDROID_HOME"
 
       - name: Initialiser le projet Android (première tentative automatisée)
-        # Chaque ligne ci-dessous répond à une question posée par bubblewrap init.
+        # Cette ligne répond automatiquement aux questions posées par bubblewrap init.
         # Si le build échoue, on regardera le log pour voir à quelle question
         # la réponse ne correspondait pas, et on ajustera cette liste.
-        run: | printf 'n\n\n\n\n\n\n\n\n\n\n\ny\nOTTOZ\nShirley Games\nShirley Games\nParis\nParis\nFR\nyes\n' | \ bubblewrap init \ --manifest="https://sig229.github.io/OTTOZ_GAME/manifest.json" \ --directory="android-project" \ --skipPwaValidation \ || true 
+        run: printf 'n\n\n\n\n\n\n\n\n\n\n\ny\nOTTOZ\nShirley Games\nShirley Games\nParis\nParis\nFR\nyes\n' | bubblewrap init --manifest="https://sig229.github.io/OTTOZ_GAME/manifest.json" --directory="android-project" --skipPwaValidation || true
+
       - name: Construire l'APK signé
         working-directory: android-project
         run: bubblewrap build --skipPwaValidation
