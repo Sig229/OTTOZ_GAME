@@ -1,0 +1,30 @@
+{
+  "name": "OTTOZ",
+  "short_name": "OTTOZ",
+  "start_url": "/OTTOZ_GAME/index.html",
+  "scope": "/OTTOZ_GAME/",
+  "display": "standalone",
+  "background_color": "#160d0a",
+  "theme_color": "#160d0a",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/OTTOZ_GAME/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/OTTOZ_GAME/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/OTTOZ_GAME/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
